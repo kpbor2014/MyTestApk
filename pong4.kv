@@ -1,0 +1,98 @@
+#:kivy 2.0.0
+
+<PongBall>:
+    size: 50, 50
+    canvas:
+        Color:
+            rgba:1,0.6,0,1
+        Ellipse:
+            pos: self.pos
+            size: self.size
+
+<PongPaddle>:
+    size: 50, 200
+    canvas:
+        Color:
+            rgba:1,0,0,1
+        Ellipse:
+            pos: self.pos
+            size: self.size
+
+<PongPaddle1>
+    size: 50, 200
+    canvas:
+        Color:
+            rgba:1,1,0,1
+        Ellipse:
+            pos: self.pos
+            size: self.size
+
+<PongGame>:
+
+    canvas.before:
+        Color:
+            rgba: 0,0.5,1,0.5
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    ball: pong_ball
+    player1: player_left
+    player2: player_right
+
+    canvas:
+        Color:
+            rgba:0.7,0.7,0.7,1
+        Rectangle:
+            pos: self.center_x - 5, 0
+            size: 10, self.height
+
+    Label:
+        font_size: 70
+        center_x: root.width / 4
+        top: root.top - 50
+        text: str(root.player1.score)
+        color:1,0,0,1
+
+    Label:
+        font_size: 70
+        center_x: root.width * 3 / 4
+        top: root.top - 50
+        text: str(root.player2.score)
+        color:1,1,0,1
+
+    PongBall:
+        id: pong_ball
+        center: self.parent.center
+
+
+    PongPaddle:
+        id: player_left
+        x: root.x - 25
+        center_y: root.center_y
+
+    PongPaddle1:
+        id: player_right
+        x: root.width - 25
+        center_y: root.center_y
+
+    Button:
+        size: root.width * 1/4,root.height*1/10
+        text: "Вперёд"
+        center_x: root.width / 4
+        center_y:0+ 0.7*self.height
+        font_size: 1/2*self.height
+        color: 1,1,1,1
+        background_color:0,0.5,1,1
+        on_press: app.on_press_button()
+
+    Button:
+        size: root.width * 0.25,root.height*0.1
+        text: app.message
+        center_x: root.width * 3 / 4
+        center_y: 0.7*self.height
+        font_size: 0.5*self.height
+        color: 1,1,1,1
+        background_color:0,0.5,1,1
+        on_press: app.level_ping()
+

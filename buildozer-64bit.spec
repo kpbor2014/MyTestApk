@@ -1,13 +1,13 @@
 [app]
 
 # (str) Title of your application
-title = Akulele
+title = PingPong
 
 # (str) Package name
 package.name = mobileapp004
 
 # (str) Package domain (needed for android/ios packaging)
-package.domain = org.arssok
+package.domain = org.kpbor2014
 
 # (str) Source code where the main.py live
 source.dir = .
@@ -28,7 +28,7 @@ source.dir = .
 #source.exclude_patterns = license,images/*/*.jpg
 
 # (str) Application versioning (method 1)
-version = 0.14
+version = 0.1
 
 # (str) Application versioning (method 2)
 # version.regex = __version__ = ['"](.*)['"]
@@ -49,7 +49,7 @@ presplash.filename = %(source.dir)s/data/logo/presplash512okmin.png
 icon.filename = %(source.dir)s/data/logo/logo512min.png
 
 # (str) Supported orientation (one of landscape, sensorLandscape, portrait or all)
-orientation = portrait
+orientation = landscape
 
 # (list) List of service to declare
 #services = NAME:ENTRYPOINT_TO_PY,NAME2:ENTRYPOINT2_TO_PY
