@@ -30,7 +30,7 @@ install:
   - ls bin/ -l
   - echo "TODO"
   - gem install dpl --pre
-  - dpl releases --token $GITHUB_TOKEN --file "bin/mobileapp004-0.1-armeabi-v7a-debug.apk" --tag_name "v.0.1"
+  - dpl releases --token $GITHUB_TOKEN --file "bin/mobileapp004-0.2-armeabi-v7a-debug.apk" --tag_name "v.0.2"
   - echo "TODO COMPILE 64bit"
 
   - rm -r -f .buildozer
@@ -41,6 +41,6 @@ install:
   - ls bin/ -l
   - echo "TODO"
   - gem install dpl --pre
-  - dpl releases --token $GITHUB_TOKEN --file "bin/mobileapp004-0.1-arm64-v8a-debug.apk" --tag_name "v.0.1"
+  - dpl releases --token $GITHUB_TOKEN --file "bin/mobileapp004-0.2-arm64-v8a-debug.apk" --tag_name "v.0.2"
 script:
   - echo "OK"
