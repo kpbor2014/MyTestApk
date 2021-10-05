@@ -1,166 +1,308 @@
 from kivy.app import App
 from kivy.uix.widget import Widget
-from kivy.properties import (
-    NumericProperty, ReferenceListProperty, ObjectProperty
-)
-from kivy.vector import Vector
 from kivy.clock import Clock
-from random import randint
-from kivy.core.audio import SoundLoader
-from kivy.properties import StringProperty
-from kivy.uix.button import Button
+import time
+from kivy.properties import *
+import random
+from kivy.lang import Builder
 
-sound = SoundLoader.load('music/beep0.wav')
-sound.play()
+Builder.load_string("""
+#:kivy 2.0.0
 
-nn=0
-kk=1
+<Form>:
+    popup_label: popup_label
+    score_label: score_label
 
-class PongPaddle(Widget):
-    score = NumericProperty(0) ## очки игрока
+    canvas:
+        Color:
+            rgba: (.5, .5, .5, 1.0)
 
-    ## Отскок мячика при коллизии с панелькой игрока
-    def bounce_ball(self, ball):
-        if self.collide_widget(ball):
-            vx, vy = ball.velocity
-            offset = (ball.center_y - self.center_y) / (self.height / 2)
-            bounced = Vector(-1 * vx, vy)
-            vel = bounced * 1.1
-            ball.velocity = vel.x, vel.y + offset
-            sound = SoundLoader.load('music/beep2.wav')
-            sound.play()
+        Line:
+            width: 1.5
+            points: (0, 0), self.size
 
-class PongPaddle1(Widget):
-    score = NumericProperty(0) ## очки игрока
+        Line:
+            width: 1.5
+            points: (self.size[0], 0), (0, self.size[1])
+    Label:
+        id: score_label
+        text: "Score: " + str(self.parent.worm_len)
+        width: self.width
 
-    ## Отскок мячика при коллизии с панелькой игрока
-    def bounce_ball(self, ball):
-        if self.collide_widget(ball):
-            vx, vy = ball.velocity
-            offset = (ball.center_y - self.center_y) / (self.height / 2)
-            bounced = Vector(-1 * vx, vy)
-            vel = bounced * 1.1
-            ball.velocity = vel.x, vel.y + offset
-            sound = SoundLoader.load('music/beep5.wav')
-            sound.play()
+    Label:
+        id: popup_label
+        width: self.width
+
+<Worm>:
 
 
-class PongBall(Widget):
+<Cell>:
+    canvas:
+        Color:
+            rgba: self.color
 
-    # Скорость движения нашего шарика по двум осям
-    velocity_x = NumericProperty(0)
-    velocity_y = NumericProperty(0)
+        Rectangle:
+            size: self.graphical_size
+            pos: self.graphical_pos
 
-    # Создаем условный вектор
-    velocity = ReferenceListProperty(velocity_x, velocity_y)
-
-    # Заставим шарик двигаться
-    def move(self):
-        self.pos = Vector(*self.velocity) + self.pos
-
-class PongGame(Widget):
-    ball = ObjectProperty(None) # это будет наша связь с объектом шарика
-    player1 = ObjectProperty(None) # Игрок 1
-    player2 = ObjectProperty(None) # Игрок 2
-
-    def serve_ball(self, vel=(4, 0)):
-        self.ball.center = self.center
-        self.ball.velocity = Vector(vel[0], vel[1]).rotate(randint(-45, 45)*(randint(0,1)+180))
-    def update(self, dt):
-        global nn, vel
-        self.ball.move() # двигаем шарик в каждом обновлении экрана
-
-        # проверка отскока шарика от панелек игроков
-        self.player1.bounce_ball(self.ball)
-        self.player2.bounce_ball(self.ball)
-
-        # отскок шарика по оси Y
-        if (self.ball.y < self.y) or (self.ball.top > self.top):
-            self.ball.velocity_y *= -1
-        # Перемещение ракетки компьютера при игре с ИИ
-        if kk==2:
-            if self.ball.x < 0.6*self.width:
-                self.player2.center_y =self.ball.y
-            elif self.ball.x >= 0.6 and self.ball.x < 0.9 :
-                self.player2.center_y = self.ball.y + randint(0, 50)*randint(-1,1)
-
-        # отскок шарика по оси X
-        # тут если шарик смог уйти за панельку игрока, то есть игрок не успел отбить шарик
-        # то это значит что он проиграл и мы добавим +1 очко противнику
-        if nn==0:
-            if self.ball.x < self.x:
-                # Первый игрок проиграл, добавляем 1 очко второму игроку
-                self.player2.score += 1
-                sound = SoundLoader.load('music/beep1.wav')
-                sound.play()
-                self.serve_ball(vel=(4, 0)) # заново спавним шарик в центре
-                if self.player2.score > 4:
-                    Pong4App.stop_ping(self)
-                    sound = SoundLoader.load('music/beep7.wav')
-                    sound.play()
-
-            if self.ball.x > self.width:
-                # Второй игрок проиграл, добавляем 1 очко первому игрок
-                self.player1.score += 1
-                sound = SoundLoader.load('music/beep4.wav')
-                sound.play()
-                self.serve_ball(vel=(-4, 0)) # заново спавним шарик в центре
-                if self.player1.score > 4:
-                    Pong4App.stop_ping(self)
-                    sound = SoundLoader.load('music/beep7.wav')
-                    sound.play()
-        elif nn==1:
-            self.player1.score = 0
-            self.player2.score = 0
-            vel=(0,0)
-            nn=0
-
-    # Событие прикосновения к экрану
-    def on_touch_move(self, touch):
-        # первый игрок может касаться только своей части экрана (левой)
-        if touch.x < self.width / 7:
-            self.player1.center_y = touch.y
-        # второй игрок может касаться только своей части экрана (правой)
-        if kk==1:
-           if touch.x > self.width - self.width / 7:
-               self.player2.center_y = touch.y
+""")
 
 
-class Pong4App(App):
-    message = StringProperty()
 
+class Timing:
+    @staticmethod
+    def linear(x):
+        return x
+
+
+class Smooth:
+    def __init__(self, interval=1.0/60.0):
+        self.objs = []
+        self.running = False
+        self.interval = interval
+
+    def run(self):
+        if self.running:
+            return
+        self.running = True
+        Clock.schedule_interval(self.update, self.interval)
+
+    def stop(self):
+        if not self.running:
+            return
+        self.running = False
+        Clock.unschedule(self.update)
+
+    def set_attr(self, obj, attr, value):
+        exec("obj." + attr + " = " + str(value))
+
+    def get_attr(self, obj, attr):
+        return float(eval("obj." + attr))
+
+    def update(self, _):
+        cur_time = time.time()
+        for line in self.objs:
+            obj, prop_name_x, prop_name_y, from_x, from_y, to_x, to_y, start_time, period, timing = line
+            time_gone = cur_time - start_time
+            if time_gone >= period:
+                self.set_attr(obj, prop_name_x, to_x)
+                self.set_attr(obj, prop_name_y, to_y)
+                self.objs.remove(line)
+            else:
+                share = time_gone / period
+                acs = timing(share)
+                self.set_attr(obj, prop_name_x, from_x * (1 - acs) + to_x * acs)
+                self.set_attr(obj, prop_name_y, from_y * (1 - acs) + to_y * acs)
+        if len(self.objs) == 0:
+            self.stop()
+
+    def move_to(self, obj, prop_name_x, prop_name_y, to_x, to_y, t, timing=Timing.linear):
+        self.objs.append((obj, prop_name_x, prop_name_y, self.get_attr(obj, prop_name_x), self.get_attr(obj, prop_name_y), to_x,to_y, time.time(), t, timing))
+        self.run()
+
+
+class XSmooth(Smooth):
+    def __init__(self, props, timing=Timing.linear, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.props = props
+        self.timing = timing
+
+    def move_to(self, obj, to_x, to_y, t):
+        super().move_to(obj, *self.props, to_x, to_y, t, timing=self.timing)
+
+
+
+
+class Cell(Widget):
+    graphical_size = ListProperty([1, 1])
+    graphical_pos = ListProperty([1, 1])
+    color = ListProperty([1, 1, 1, 1])
+
+    def __init__(self, x, y, size, margin=4):
+        super().__init__()
+        self.actual_size = (size, size)
+        self.graphical_size = (size - margin, size - margin)
+        self.margin = margin
+        self.actual_pos = (x, y)
+        self.graphical_pos_attach()
+        self.color = (0.2, 1.0, 0.2, 1.0)
+
+    def graphical_pos_attach(self, smooth_motion=None):
+        to_x, to_y = self.actual_pos[0] - self.graphical_size[0] / 2, self.actual_pos[1] - self.graphical_size[1] / 2
+        if smooth_motion is None:
+            self.graphical_pos = to_x, to_y
+        else:
+            smoother, t = smooth_motion
+            smoother.move_to(self, to_x, to_y, t)
+
+    def move_to(self, x, y, **kwargs):
+        self.actual_pos = (x, y)
+        self.graphical_pos_attach(**kwargs)
+
+    def move_by(self, x, y, **kwargs):
+        self.move_to(self.actual_pos[0] + x, self.actual_pos[1] + y, **kwargs)
+
+    def get_pos(self):
+        return self.actual_pos
+
+    def step_by(self, direction, **kwargs):
+        self.move_by(self.actual_size[0] * direction[0], self.actual_size[1] * direction[1], **kwargs)
+
+
+class Worm(Widget):
+    def __init__(self, config):
+        super().__init__()
+        self.cells = []
+        self.config = config
+        self.cell_size = config.CELL_SIZE
+        self.head_init((100, 100))
+        for i in range(config.DEFAULT_LENGTH):
+            self.lengthen()
+
+    def destroy(self):
+        for i in range(len(self.cells)):
+            self.remove_widget(self.cells[i])
+        self.cells = []
+
+    def lengthen(self, pos=None, direction=(0, 1)):
+        if pos is None:
+            px = self.cells[-1].get_pos()[0] + direction[0] * self.cell_size
+            py = self.cells[-1].get_pos()[1] + direction[1] * self.cell_size
+            pos = (px, py)
+        self.cells.append(Cell(*pos, self.cell_size, margin=self.config.MARGIN))
+        self.add_widget(self.cells[-1])
+
+    def head_init(self, pos):
+        self.lengthen(pos=pos)
+
+    def move(self, direction, **kwargs):
+        for i in range(len(self.cells) - 1, 0, -1):
+            self.cells[i].move_to(*self.cells[i - 1].get_pos(), **kwargs)
+        self.cells[0].step_by(direction, **kwargs)
+
+    def gather_positions(self):
+        return [cell.get_pos() for cell in self.cells]
+
+    def head_intersect(self, cell):
+        return self.cells[0].get_pos() == cell.get_pos()
+
+
+class Form(Widget):
+    worm_len = NumericProperty(0)
+
+    def __init__(self, config):
+        super().__init__()
+        self.config = config
+        self.worm = None
+        self.cur_dir = (0, 0)
+        self.fruit = None
+        self.game_on = True
+        self.smooth = XSmooth(["graphical_pos[0]", "graphical_pos[1]"])
+
+    def random_cell_location(self, offset):
+        x_row = self.size[0] // self.config.CELL_SIZE
+        x_col = self.size[1] // self.config.CELL_SIZE
+        return random.randint(offset, x_row - offset), random.randint(offset, x_col - offset)
+
+    def random_location(self, offset):
+        x_row, x_col = self.random_cell_location(offset)
+        return self.config.CELL_SIZE * x_row, self.config.CELL_SIZE * x_col
+
+    def fruit_dislocate(self):
+        x, y = self.random_location(2)
+        while (x, y) in self.worm.gather_positions():
+            x, y = self.random_location(2)
+        self.fruit.move_to(x, y)
+
+    def start(self):
+        self.worm = Worm(self.config)
+        self.add_widget(self.worm)
+        if self.fruit is not None:
+            self.remove_widget(self.fruit)
+        self.fruit = Cell(0, 0, self.config.APPLE_SIZE)
+        self.fruit.color = (1.0, 0.2, 0.2, 1.0)
+        self.fruit_dislocate()
+        self.add_widget(self.fruit)
+        self.game_on = True
+        self.cur_dir = (0, -1)
+        Clock.schedule_interval(self.update, self.config.INTERVAL)
+        self.popup_label.text = ""
+
+    def stop(self, text=""):
+        self.game_on = False
+        self.popup_label.text = text
+        Clock.unschedule(self.update)
+
+    def game_over(self):
+        self.stop("GAME OVER" + " " * 5 + "\ntap to reset")
+
+    def align_labels(self):
+        try:
+            self.popup_label.pos = ((self.size[0] - self.popup_label.width) / 2, self.size[1] / 2)
+            self.score_label.pos = ((self.size[0] - self.score_label.width) / 2, self.size[1] - 80)
+        except:
+            print(self.__dict__)
+            assert False
+
+    def update(self, _):
+        if not self.game_on:
+            return
+        self.worm.move(self.cur_dir, smooth_motion=(self.smooth, self.config.INTERVAL))
+        if self.worm.head_intersect(self.fruit):
+            directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+            self.worm.lengthen(direction=random.choice(directions))
+            self.fruit_dislocate()
+        cell = self.worm_bite_self()
+        if cell:
+            cell.color = (1.0, 0.2, 0.2, 1.0)
+            self.game_over()
+        self.worm_len = len(self.worm.cells)
+        self.align_labels()
+
+    def on_touch_down(self, touch):
+        if not self.game_on:
+            self.worm.destroy()
+            self.start()
+            return
+        ws = touch.x / self.size[0]
+        hs = touch.y / self.size[1]
+        aws = 1 - ws
+        if ws > hs and aws > hs:
+            cur_dir = (0, -1)
+        elif ws > hs >= aws:
+            cur_dir = (1, 0)
+        elif ws <= hs < aws:
+            cur_dir = (-1, 0)
+        else:
+            cur_dir = (0, 1)
+        self.cur_dir = cur_dir
+
+    def worm_bite_self(self):
+        for cell in self.worm.cells[1:]:
+            if self.worm.head_intersect(cell):
+                return cell
+        return False
+
+
+class Config:
+    DEFAULT_LENGTH = 20
+    CELL_SIZE = 25
+    APPLE_SIZE = 35
+    MARGIN = 4
+    INTERVAL = 0.3
+    DEAD_CELL = (1, 0, 0, 1)
+    APPLE_COLOR = (1, 1, 0, 1)
+
+
+class Worm2App(App):
     def build(self):
-        global game
-        game = PongGame()
-        # game.serve_ball()
-        # Clock.schedule_interval(game.update, 1.0 / 60.0)# 60 FPS
-        self.message = "С игроком"
-        return game
+        self.config = Config()
+        self.form = Form(self.config)
+        return self.form
 
-    def on_press_button(self):
-        global game, nn, mm
-        nn=1
-        game.serve_ball()
-        Clock.schedule_interval(game.update, 1.0 / 30)# 60 FPS
-        return game
-
-    def stop_ping(self):
-        global game
-        self.ball.center = self.center
-        self.ball.velocity = vel
-        return game
-
-# Изменить уровень
-    def level_ping(self):
-        global kk, message
-        if kk == 2:
-            self.message = "С игроком"
-            kk = 1
-        elif kk == 1:
-            self.message = "С ИИ"
-            kk = 2
-        return kk
+    def on_start(self):
+        self.form.start()
 
 
 if __name__ == '__main__':
-    Pong4App().run()
+    Worm2App().run()
