@@ -4,7 +4,7 @@
 title = SnakeMe
 
 # (str) Package name
-package.name = mobileapp005
+package.name = mobileapp006
 
 # (str) Package domain (needed for android/ios packaging)
 package.domain = org.kpbor2014
@@ -28,7 +28,7 @@ source.include_patterns = sound/*.wav,images/*.png
 #source.exclude_patterns = license,images/*/*.jpg
 
 # (str) Application versioning (method 1)
-version = 0.9
+version = 1.0
 
 # (str) Application versioning (method 2)
 # version.regex = __version__ = ['"](.*)['"]
